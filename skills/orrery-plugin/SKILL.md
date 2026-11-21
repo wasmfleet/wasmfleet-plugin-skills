@@ -19,7 +19,7 @@ Orrery 中控在 **macOS 和 Linux** 上运行，以独立进程运行插件：�
 1. **端口**：从环境变量 `PORT` 读取，并**只监听 `127.0.0.1`**。外部访问一律经过中控转发。
 2. **路径前缀**：插件挂在 `/p/<路径名>/` 下，中控转发时会去掉前缀。页面里的链接、静态资源和接口请求一律**用相对路径**（`api/items`、`static/app.js`），不要以 `/` 开头；需要绝对路径时，用 `ORRERY_BASE_PATH`（如 `/p/hello`，没有结尾斜杠）来拼。
 3. **数据放在工作目录**：进程的当前目录就是 `ORRERY_PLUGIN_DATA`，用相对路径（如 `data.db`）即可。更新、回退、重启时都会保留，只有在中控里删除插件时才删除。
-4. **处理 SIGTERM**：中控停止插件时，给整个进程组发 SIGTERM，5 秒后发 SIGKILL。收到后要在 5 秒内保存数据并退出。
+4. **在前台运行，不要自己转到后台**（不要 daemonize、`setsid`、`nohup &`），否则会脱离中控管理的进程组。**处理 SIGTERM**：中控停止插件时，给整个进程组发 SIGTERM，5 秒后发 SIGKILL。收到后要在 5 秒内保存数据并退出。
 5. **退出码有含义**：在默认的「失败时重启」策略下，非 0 退出会被重启（退避 1、2、4……秒，最长 60 秒），退出码 0 表示正常结束、不再重启。常驻服务不要以 0 退出。
 6. **日志写 stdout / stderr**，一行一条，不要输出颜色控制码，及时 flush。中控按行采集，stderr 在页面上标红。
 7. **单个可执行文件**：静态资源打进程序（Rust 用 `include_str!`，Go 用 `embed`），不依赖额外文件。stdin 为空。
@@ -27,7 +27,7 @@ Orrery 中控在 **macOS 和 Linux** 上运行，以独立进程运行插件：�
 
 ## 发布约定（中控按此挑选）
 
-- **源码仓库与发布仓库分开**：源码在 `orrery-plugin-<名称>`，Release 只发在 `orrery-plugin-<名称>-releases`。中控的只读令牌只授权发布仓库，读不到源码。发布仓库是公开的话，中控不需要令牌。
+- **源码仓库与发布仓库分开**：源码在 `orrery-plugin-<名称>`，Release 只发在 `orrery-plugin-<名称>-releases`。中控的只读令牌只授权发布仓库，读不到源码。发布仓库公开时也建议填令牌，避免 GitHub 匿名限流（每个 IP 每小时 60 次）。
 - **插件名称取自发布仓库名**：去掉开头的 `orrery-plugin-` 和结尾的 `-releases`。例如 `orrery-plugin-hello-releases` → 名称 `hello`，路径名 `/p/hello/`。
 - **正式版 Release**：草稿和预发布不会显示。中控按发布时间从新到旧列出版本，可以选择和回退。tag 格式不限制，建议用 `vX.Y.Z`。
 - **附件是直接可执行的程序，不打包**，文件名带上架构和系统：`server-aarch64-apple-darwin`、`server-x86_64-apple-darwin`、`server-x86_64-unknown-linux-musl`、`server-aarch64-unknown-linux-gnu`。中控会忽略压缩包、安装包和 `.exe`。
