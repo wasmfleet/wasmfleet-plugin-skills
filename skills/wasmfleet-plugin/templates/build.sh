@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Orrery 插件本地编译脚本模板（自己调试用；正式发布由 GitHub Actions 完成）
+# wasmfleet 插件本地编译脚本模板（自己调试用；正式发布由 GitHub Actions 完成）
 #
 # 用法：
 #   ./build.sh                 编译 release 版本到 dist/<程序名>

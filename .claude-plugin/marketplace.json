@@ -1,12 +1,12 @@
 {
-  "name": "orrery",
-  "owner": { "name": "Orrery" },
-  "metadata": { "description": "Orrery 相关的 Claude Code 插件与技能" },
+  "name": "wasmfleet",
+  "owner": { "name": "wasmfleet" },
+  "metadata": { "description": "wasmfleet 相关的 Claude Code 插件与技能" },
   "plugins": [
     {
-      "name": "orrery-plugin-skills",
+      "name": "wasmfleet-plugin-skills",
       "source": "./",
-      "description": "Orrery 中控插件开发与发布技能"
+      "description": "wasmfleet 中控插件开发与发布技能"
     }
   ]
 }

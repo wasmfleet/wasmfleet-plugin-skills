@@ -6,11 +6,11 @@
 
 | 变量 | 含义 |
 |---|---|
-| `PORT` | 中控分配的端口（20000～29999，每个插件固定一个；被别的程序占用时会自动换一个）。`ORRERY_PLUGIN_PORT` 是同一个值 |
-| `ORRERY_BASE_PATH` | 反向代理前缀，如 `/p/hello`，没有结尾斜杠 |
-| `ORRERY_PLUGIN_ID` | 插件编号，如 `plg-xxxxxxxxxx` |
-| `ORRERY_PLUGIN_DATA` | 插件工作目录的绝对路径，也是进程的当前目录 |
-| `ORRERY_CONTROL_URL` | 中控地址，如 `http://127.0.0.1:18080` |
+| `PORT` | 中控分配的端口（20000～29999，每个插件固定一个；被别的程序占用时会自动换一个）。`WASMFLEET_PLUGIN_PORT` 是同一个值 |
+| `WASMFLEET_BASE_PATH` | 反向代理前缀，如 `/p/hello`，没有结尾斜杠 |
+| `WASMFLEET_PLUGIN_ID` | 插件编号，如 `plg-xxxxxxxxxx` |
+| `WASMFLEET_PLUGIN_DATA` | 插件工作目录的绝对路径，也是进程的当前目录 |
+| `WASMFLEET_CONTROL_URL` | 中控地址，如 `http://127.0.0.1:18080` |
 
 - 启动参数可以在中控里填写，按空白分隔（不支持引号），其中的 `{port}` 会被替换成端口。
 - stdin 是 `/dev/null`。
@@ -82,7 +82,7 @@ tokio 需要开启 `signal` 特性。收到信号后停止接受新连接，等�
 
 ## 工作目录与数据
 
-- 当前目录就是 `ORRERY_PLUGIN_DATA`，数据文件用相对路径（如 `data.db`）即可。
+- 当前目录就是 `WASMFLEET_PLUGIN_DATA`，数据文件用相对路径（如 `data.db`）即可。
 - 更新、回退、修改设置、重启时都会保留；只有在中控里删除插件时才会删除。
 - 修改数据库表结构时，启动时检测并迁移。用户可能跨多个版本升级，也可能回退；不能直接丢弃的数据先备份到另一张表。
 

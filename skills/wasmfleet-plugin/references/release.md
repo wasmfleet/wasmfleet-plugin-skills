@@ -33,17 +33,50 @@
 - 附件最大 256 MiB。
 - 在中控里手动上传过程序文件的插件，版本号会被清空。这时如果开着自动更新，下一次检查（最多 10 分钟后）就会被换成仓库里的最新版本。想临时测试自己编的程序，先关掉自动更新。
 
-## 仓库与令牌
+## 发布模式：私有、公开闭源、开源
 
-| | 源码仓库 `orrery-plugin-<名称>` | 发布仓库 `orrery-plugin-<名称>-releases` |
-|---|---|---|
-| 内容 | 源码、`.github/workflows/release.yml` | 只有一个 README 和 Release |
-| 可见性 | 通常私有 | 私有或公开 |
+开始前先问清楚两件事：插件要不要公开给别人安装？源码要不要开源？然后选一种模式：
 
-- **发布令牌**：细粒度令牌，只选发布仓库，Contents: Read and write。存在源码仓库的 Actions Secret `RELEASE_TOKEN` 里，供 Actions 创建 Release。GitHub 自动给 Actions 的内置令牌只能写它所在的仓库，所以需要这个令牌。
-- **中控令牌**：细粒度令牌，只选发布仓库，Contents: Read-only（Metadata 会自动变成只读），其他权限都不给。填在中控里，中控会先用它读一次版本列表，读不到就不保存。
-- **公开的发布仓库也建议填只读令牌**。没有令牌时，GitHub 对接口请求的限流是每个 IP 每小时 60 次。每个开着自动更新的插件每 10 分钟检查一次，插件多时可能超出限额，超出后会报 403。
+| | 私有插件 | 公开、闭源 | 公开、开源 |
+|---|---|---|---|
+| 源码仓库 `<名称>` | 私有 | 私有 | **公开，Release 也发在这里** |
+| 发布仓库 `<名称>-releases` | 私有 | 公开 | 不需要 |
+| 工作流 `RELEASE_REPO` | `${{ github.repository }}-releases` | `${{ github.repository }}-releases` | `${{ github.repository }}` |
+| Actions 发布令牌 `RELEASE_TOKEN` | 需要 | 需要 | **不需要**（用 Actions 自带的令牌） |
+| 中控令牌（只读） | **必须**，否则读不到私有仓库 | 可不填，但建议填（避免限流） | 可不填，但建议填（避免限流） |
+| 谁能安装 | 只有持有只读令牌的人 | 任何人 | 任何人 |
+| 谁能看到源码 | 只有你 | 只有你 | 任何人 |
+
+**为什么闭源时要分两个仓库**：中控的只读令牌需要 Contents: Read-only 权限才能读 Release，而这个权限同样能读源码。GitHub 没有「只读 Release」这种权限。源码和 Release 放在同一个私有仓库，拿到令牌的人就能读到源码；拆开以后，令牌只授权发布仓库，读不到源码。开源的话源码本来就公开，自然不用拆。
+
+> 只给自己用、不在乎令牌能读到源码时，私有插件也可以只用一个私有仓库：`RELEASE_REPO` 设为 `${{ github.repository }}`，不需要 `RELEASE_TOKEN`，中控令牌授权这个仓库即可。默认还是建议分开。
+
+### 各模式的创建步骤
+
+发布仓库必须先有一个提交（用 `--add-readme`），才能在上面创建 tag。
+
+```bash
+# 私有插件
+gh repo create <owner>/<名称>-releases --private --add-readme
+gh repo create <owner>/<名称> --private --source . --remote origin
+
+# 公开、闭源
+gh repo create <owner>/<名称>-releases --public --add-readme
+gh repo create <owner>/<名称> --private --source . --remote origin
+
+# 公开、开源（只有一个仓库）
+gh repo create <owner>/<名称> --public --source . --remote origin
+```
+
+开源时还要把工作流里的 `RELEASE_REPO` 改成 `${{ github.repository }}`，并添加 LICENSE。中控里填的仓库地址就是这个源码仓库。
+
+### 令牌
+
+- **发布令牌**（只有分仓库时需要）：细粒度令牌，只选发布仓库，Contents: Read and write。存在源码仓库的 Actions Secret `RELEASE_TOKEN` 里。Actions 自带的令牌只能写它所在的仓库，写不了另一个仓库，所以需要这个令牌。
+- **中控令牌**：细粒度令牌，只选中控要读的那个仓库（分仓库时是发布仓库，开源时是源码仓库），Contents: Read-only（Metadata 会自动变成只读），其他权限都不给。中控会先用它读一次版本列表，读不到就不保存。
+- **公开仓库也建议填只读令牌**：不填时，GitHub 对每个 IP 的接口请求限流为每小时 60 次。每个开着自动更新的插件每 10 分钟检查一次，插件多了可能超出，超出后报 403。
 - 两个令牌都建议设有效期。发布令牌过期后 Actions 会失败，重新生成后运行一次 `gh secret set RELEASE_TOKEN` 覆盖即可。
+- 两个令牌不要混用。
 
 ## 版本号
 
@@ -69,7 +102,7 @@ CI 通过环境变量 `APP_VERSION` 把版本号注入程序（见 runtime.md）
 ## 发布后校验
 
 ```bash
-R=<owner>/orrery-plugin-<名称>-releases
+R=<owner>/wasmfleet-plugin-<名称>-releases
 TAG=$(gh release list --repo $R --limit 1 --json tagName -q '.[0].tagName')
 gh release view $TAG --repo $R --json isDraft,isPrerelease,assets \
   -q '"draft=\(.isDraft) prerelease=\(.isPrerelease)", (.assets[] | "\(.name)  \(.size)")'
