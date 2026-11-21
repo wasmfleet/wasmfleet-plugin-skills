@@ -31,14 +31,14 @@ skills/wasmfleet-plugin/
 作为插件安装（推荐，之后可以随仓库更新）：
 
 ```
-/plugin marketplace add Char1esOrz/wasmfleet-plugin-skills
+/plugin marketplace add wasmfleet/wasmfleet-plugin-skills
 /plugin install wasmfleet-plugin-skills@wasmfleet
 ```
 
 或者直接复制技能目录：
 
 ```bash
-git clone https://github.com/Char1esOrz/wasmfleet-plugin-skills.git
+git clone https://github.com/wasmfleet/wasmfleet-plugin-skills.git
 mkdir -p ~/.claude/skills && cp -r wasmfleet-plugin-skills/skills/wasmfleet-plugin ~/.claude/skills/
 ```
 
@@ -49,7 +49,7 @@ mkdir -p ~/.claude/skills && cp -r wasmfleet-plugin-skills/skills/wasmfleet-plug
 把技能目录复制到 Codex 的 skills 目录：
 
 ```bash
-git clone https://github.com/Char1esOrz/wasmfleet-plugin-skills.git
+git clone https://github.com/wasmfleet/wasmfleet-plugin-skills.git
 mkdir -p ~/.codex/skills && cp -r wasmfleet-plugin-skills/skills/wasmfleet-plugin ~/.codex/skills/
 ```
 
