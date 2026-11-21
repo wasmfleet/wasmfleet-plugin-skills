@@ -1,0 +1,8 @@
+{
+  "name": "orrery-plugin-skills",
+  "version": "1.0.0",
+  "description": "Orrery 中控插件开发与发布：运行约定（PORT、反向代理前缀、SIGTERM、工作目录）与 GitHub Actions 自动发布到独立的 releases 仓库",
+  "author": { "name": "Orrery" },
+  "license": "MIT",
+  "keywords": ["orrery", "plugin", "release", "github-actions", "skill"]
+}
